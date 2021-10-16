@@ -1,4 +1,4 @@
-# Node Firefox Sync
+# Node Firefox Sync [![npm version](http://img.shields.io/npm/v/firefox-sync.svg?style=flat-square)](https://www.npmjs.org/package/firefox-sync)
 
 > Node.js client for Firefox Sync.
 
