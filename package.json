@@ -1,6 +1,6 @@
 {
   "name": "firefox-sync",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Node.js client for Firefox Sync.",
   "license": "Unlicense",
   "author": "Val (https://val.codejam.info)",
