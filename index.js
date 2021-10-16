@@ -208,7 +208,7 @@ class StatefulFirefoxSync extends FirefoxSync {
 }
 
 /**
- * @param {import('./types').SyncOptions} options
+ * @param {import('./types').SyncOptions} [options]
  * @returns {FirefoxSync}
  */
 function Sync (options = {}) {
