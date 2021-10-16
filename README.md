@@ -386,3 +386,17 @@ const usage = await sync.getConfiguration()
 ```
 
 </details>
+
+## See also
+
+[Firefox Sync CLI](https://github.com/valeriangalliat/firefox-sync-cli),
+a command line interface to access your Sync data.
+
+The story on how this all started when I tried to access my Lockwise
+passwords from the CLI:
+
+1. [A journey to scripting Firefox Sync / Lockwise: existing clients](https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html)
+1. [A journey to scripting Firefox Sync / Lockwise: figuring the protocol](scripting-firefox-sync-lockwise-figuring-the-protocol.html)
+1. [A journey to scripting Firefox Sync / Lockwise: understanding BrowserID](scripting-firefox-sync-lockwise-understanding-browserid.html)
+1. [A journey to scripting Firefox Sync / Lockwise: hybrid OAuth](scripting-firefox-sync-lockwise-hybrid-oauth.html)
+1. [A journey to scripting Firefox Sync / Lockwise: complete OAuth](scripting-firefox-sync-lockwise-complete-oauth.html)
