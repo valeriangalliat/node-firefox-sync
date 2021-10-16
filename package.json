@@ -1,0 +1,25 @@
+{
+  "name": "firefox-sync",
+  "version": "0.1.0",
+  "description": "Node.js client for Firefox Sync.",
+  "license": "Unlicense",
+  "author": "Val (https://val.codejam.info)",
+  "repository": "valeriangalliat/node-firefox-sync",
+  "scripts": {
+    "check": "tsc auth/*.js *.js --checkJs --noEmit",
+    "lint": "standard",
+    "prepare": "npm run lint && npm run types",
+    "types": "npm run types:clean && tsc auth/*.js *.js --declaration --checkJs --emitDeclarationOnly --removeComments",
+    "types:clean": "rm -f auth/*.d.ts *.d.ts"
+  },
+  "dependencies": {
+    "fxa-js-client": "^1.0.25",
+    "hawk": "^9.0.0",
+    "node-fetch": "^2.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.0",
+    "standard": "^16.0.4",
+    "typescript": "^4.4.4"
+  }
+}
