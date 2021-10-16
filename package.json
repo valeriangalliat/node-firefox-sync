@@ -9,7 +9,7 @@
     "check": "tsc auth/*.js *.js --checkJs --noEmit",
     "lint": "standard",
     "prepare": "npm run lint && npm run types",
-    "types": "npm run types:clean && tsc auth/*.js *.js --declaration --checkJs --emitDeclarationOnly --removeComments",
+    "types": "npm run types:clean && tsc auth/*.js *.js --checkJs --declaration --emitDeclarationOnly --removeComments",
     "types:clean": "rm -f auth/*.d.ts *.d.ts"
   },
   "dependencies": {
