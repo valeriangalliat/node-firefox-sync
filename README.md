@@ -28,6 +28,12 @@ The main things that are missing are:
 
 Feel free to open a pull request to add those if you need them!
 
+## Installation
+
+```sh
+npm install firefox-sync
+```
+
 ## Usage
 
 ```js
