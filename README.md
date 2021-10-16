@@ -4,16 +4,17 @@
 
 ## Overview
 
-This kinda started as a proof of concept, but now it's pretty much a
-fully functional Firefox Sync client.
+This kinda started as a [proof of concept](https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html),
+but now it's pretty much a fully functional Firefox Sync client.
 
 You can authenticate to Firefox Sync through password authentication or
 through OAuth. With OAuth, the user password is never exposed to the
 program so I would highly recommend this method for security reasons.
 
 Then you can query all the Firefox Sync collections, as well as the
-other [information endpoints](https://mozilla-services.readthedocs.io/en/latest/storage/apis-1.5.html)
-that are available.
+other [information endpoints][storage-api] that are available.
+
+[storage-api]: https://mozilla-services.readthedocs.io/en/latest/storage/apis-1.5.html
 
 The main things that are missing are:
 
@@ -31,29 +32,30 @@ Feel free to open a pull request to add those if you need them!
 
 ```js
 const Sync = require('firefox-sync')
-
-const sync = sync(options)
+const sync = Sync(options)
 ```
 
 The `options` object can contain:
 
-| Name               | Description                                                                                                                                       | Default                                         |
-|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------|
-| `credsFile`        | Manage authentication state in the given file. Useful if you want to keep state between multiple command invocations (e.g. a CLI).                | `undefined`                                     |
-| `clientId`         | OAuth client ID. Defaults to the [Android app's one][android-app-id] for convenience.                                                             | `'e7ce535d93522896'`                            |
-| `scope`            | OAuth scope to access Firefox Sync, you probably don't want to change it as it's currently the only scope that gives access to Sync data.         | `'https://identity.mozilla.com/apps/oldsync'`   |
-| `authServerUrl`    | Only used for password authentication, [Firefox Accounts API][fxa-api] endpoint.                                                                  | `'https://api.accounts.firefox.com/v1'`         |
-| `authorizationUrl` | OAuth authorization URL. Default from the [OpenID configuration][openid].                                                                         | `'https://accounts.firefox.com/authorization'`  |
-| `tokenEndpoint`    | OAuth token endpoint. Default from the [OpenID configuration][openid].                                                                            | `'https://oauth.accounts.firefox.com/v1/token'`
-| `tokenServerUrl`   | [TokenServer](https://github.com/mozilla-services/tokenserver/) URL.                                                                              | `'https://token.services.mozilla.com'`          |
-| `oauthOptions`     | Extra OAuth authorization [parameters](oauth-parameters). You'll mainly want to use this to pass `access_type: 'offline'` to get a refresh token. | `undefined`                                     |
+| Name               | Description                                                                                                                                        |
+|--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `credsFile`        | Manage authentication state in the given file. Useful if you want to keep state between multiple command invocations (e.g. a CLI).                 |
+| `clientId`         | OAuth client ID. Defaults to the [Android app's one][android-app-id] for convenience.                                                              |
+| `scope`            | OAuth scope to access Firefox Sync, you probably don't want to change the default as it's currently the only scope that gives access to Sync data. |
+| `authServerUrl`    | Only used for password authentication, [Firefox Accounts API][fxa-api] endpoint, in case you want to use a custom server.                          |
+| `authorizationUrl` | OAuth authorization URL. Default from the [OpenID configuration][openid].                                                                          |
+| `tokenEndpoint`    | OAuth token endpoint. Default from the [OpenID configuration][openid].                                                                             |
+| `tokenServerUrl`   | [TokenServer](https://github.com/mozilla-services/tokenserver/) URL, in case you want to use a custom server.                                      |
+| `oauthOptions`     | Extra OAuth [parameters](oauth-parameters). You'll mainly want to use this to pass `access_type: 'offline'` to get a refresh token.                |
 
 [android-app-id]: https://github.com/mozilla-lockwise/lockwise-android/blob/d3c0511f73c34e8759e1bb597f2d3dc9bcc146f0/app/src/main/java/mozilla/lockbox/support/Constant.kt#L29
 [fxa-api]: https://github.com/mozilla/fxa/blob/main/packages/fxa-auth-server/docs/api.md
 [openid]: https://accounts.firefox.com/.well-known/openid-configuration
 [oauth-parameters]: https://mozilla.github.io/ecosystem-platform/docs/process/integration-with-fxa#authorization-query-parameters
 
-### `auth.password`
+## Authentication
+
+### Email and password
 
 **Warning:** while this is probably the easiest method to sign in, it
 gives access to the program to the plaintext password. Even though
@@ -63,11 +65,15 @@ in RAM and JavaScript doesn't give us a way to reliably wipe it after
 authenticating. Keep that in mind when evaluating your threat model.
 
 ```js
-const creds = await sync.auth.password({
-  email: 'hello@mozilla.com',
-  password: 'The password goes here!'
+const creds = await sync.auth.password('hello@mozilla.com', 'The password goes here!')
+
+const creds = await sync.auth.password('hello@mozilla.com', 'The password goes here!', {
+  authServerUrl: 'https://your.custom.url/'
 })
 ```
+
+<details>
+<summary>Response</summary>
 
 ```json
 {
@@ -98,11 +104,31 @@ const creds = await sync.auth.password({
 }
 ```
 
-### `auth.oauth.challenge`
+</details>
+
+### OAuth
+
+First, we issue a OAuth challenge that the user needs to open in a
+browser.
+
+If you don't have your own OAuth client ID with a properly configured
+redirect URL for your application, you can use a public client ID like
+[the one of the Android app](https://github.com/mozilla-lockwise/lockwise-android/blob/d3c0511f73c34e8759e1bb597f2d3dc9bcc146f0/app/src/main/java/mozilla/lockbox/support/Constant.kt#L29>),
+but you'll need to use web debugging tools to retrieve the OAuth
+response code, so this will only work for testing purpose.
 
 ```js
 const challenge = await sync.auth.oauth.challenge()
+
+const challenge = await sync.auth.oauth.challenge({
+  oauthOptions: {
+    access_type: 'offline'
+  }
+})
 ```
+
+<details>
+<summary>Response</summary>
 
 ```json
 {
@@ -113,9 +139,11 @@ const challenge = await sync.auth.oauth.challenge()
 }
 ```
 
-### `auth.oauth.complete`
+</details>
 
-This is typically the query parameters you get on the OAuth redirect URL.
+Upon successful authentication, the user is redirected to the configured
+URL that will include a `code` and `state` query string parameters that
+you need to pass to the `auth.oauth.complete` function.
 
 ```js
 const result = {
@@ -124,18 +152,29 @@ const result = {
 }
 
 const creds = await sync.auth.oauth.complete(challenge, result)
+
+const creds = await sync.auth.oauth.complete(challenge, result, {
+  tokenEndpoint: 'https://your.custom.url/token'
+})
 ```
 
-Same output as [`sync.auth.password`](#auth-password).
+Same output as [`auth.password`](#email-and-password).
+
+</details>
+
+## Collections
 
 ### `getCollections`
 
 > Returns an object mapping collection names associated with the account
-> to the last modified time for each collection. [[API documentation]].
+> to the last modified time for each collection.
 
 ```js
 const collections = await sync.getCollections()
 ```
+
+<details>
+<summary>Response</summary>
 
 ```json
 {
@@ -152,15 +191,20 @@ const collections = await sync.getCollections()
 }
 ```
 
+</details>
+
 ### `getCollection`
 
 > By default only the BSO IDs are returned, but full objects can be
 > requested using the `full` parameter. If the collection does not
-> exist, an empty list is returned. [[API documentation]].
+> exist, an empty list is returned.
 
 ```js
 const items = await sync.getCollection('bookmarks')
 ```
+
+<details>
+<summary>Response</summary>
 
 ```json
 [
@@ -170,10 +214,15 @@ const items = await sync.getCollection('bookmarks')
 ]
 ```
 
+</details>
+
 ```js
 const items = await sync.getCollection('bookmarks', { full: true })
 const items = await sync.getCollection('bookmarks', { full: true, ids: ['foo', 'bar'] })
 ```
+
+<details>
+<summary>Response</summary>
 
 ```json
 [
@@ -190,14 +239,18 @@ const items = await sync.getCollection('bookmarks', { full: true, ids: ['foo', '
 ]
 ```
 
+</details>
+
 ### `getCollectionItem`
 
 > Returns the BSO in the collection corresponding to the requested ID.
-> [[API documentation]].
 
 ```js
 const item = await sync.getCollectionItem('bookmarks', 'foo')
 ```
+
+<details>
+<summary>Response</summary>
 
 ```json
 {
@@ -212,15 +265,27 @@ const item = await sync.getCollectionItem('bookmarks', 'foo')
 }
 ```
 
+</details>
+
+## Information
+
+There's a [number of endpoints][storage-api-endpoints] that return some
+information about this Firefox Sync instance.
+
+[storage-api-endpoints]: https://mozilla-services.readthedocs.io/en/latest/storage/apis-1.5.html#general-info
+
 ### `getQuota`
 
 > Returns a two-item list giving the user’s current usage and quota (in
 > kB). The second item will be `null` if the server does not enforce
-> quotas. [[API documentation]].
+> quotas.
 
 ```js
 const quota = await sync.getQuota()
 ```
+
+<details>
+<summary>Response</summary>
 
 ```json
 [
@@ -229,15 +294,20 @@ const quota = await sync.getQuota()
 ]
 ```
 
+</details>
+
 ### `getCollectionUsage`
 
 > Returns an object mapping collection names associated with the account
-> to the data volume used for each collection (in kB). [[API documentation]].
+> to the data volume used for each collection (in kB).
 
 
 ```js
 const usage = await sync.getCollectionUsage()
 ```
+
+<details>
+<summary>Response</summary>
 
 ```json
 {
@@ -254,14 +324,19 @@ const usage = await sync.getCollectionUsage()
 }
 ```
 
+</details>
+
 ### `getCollectionCounts`
 
 > Returns an object mapping collection names associated with the account
-> to the total number of items in each collection. [[API documentation]].
+> to the total number of items in each collection.
 
 ```js
 const usage = await sync.getCollectionCounts()
 ```
+
+<details>
+<summary>Response</summary>
 
 ```json
 {
@@ -278,14 +353,19 @@ const usage = await sync.getCollectionCounts()
 }
 ```
 
+</details>
+
 ### `getConfiguration`
 
 > Provides information about the configuration of this storage server
-> with respect to various protocol and size limits. [[API documentation]].
+> with respect to various protocol and size limits.
 
 ```js
 const usage = await sync.getConfiguration()
 ```
+
+<details>
+<summary>Response</summary>
 
 ```json
 {
@@ -299,4 +379,4 @@ const usage = await sync.getConfiguration()
 }
 ```
 
-[API documentation]: https://mozilla-services.readthedocs.io/en/latest/storage/apis-1.5.html#general-info
+</details>
