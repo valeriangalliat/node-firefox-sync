@@ -3,10 +3,10 @@
  * @property {string} [credsFile]
  * @property {string} [clientId]
  * @property {string} [scope]
- * @property {string} [authServerUr]
- * @property {string} [authorizationUr]
+ * @property {string} [authServerUrl]
+ * @property {string} [authorizationUrl]
  * @property {string} [tokenEndpoint]
- * @property {string} [tokenServerUr]
+ * @property {string} [tokenServerUrl]
  * @property {import('./auth/oauth-base').OAuthOptions} [oauthOptions]
  *
  * @typedef {Object} OAuthToken
