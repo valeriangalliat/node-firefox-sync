@@ -5,7 +5,7 @@
  * @property {string} [scope]
  * @property {string} [authServerUr]
  * @property {string} [authorizationUr]
- * @property {string} [tokenEndpoin]
+ * @property {string} [tokenEndpoint]
  * @property {string} [tokenServerUr]
  * @property {import('./auth/oauth-base').OAuthOptions} [oauthOptions]
  *
