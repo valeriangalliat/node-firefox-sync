@@ -89,8 +89,8 @@ class FirefoxSync {
       await this.tokenRefreshPromise
     } else if (tokenServer.shouldRefresh(this.creds)) {
       this.tokenRefreshPromise = tokenServer.refresh(this.creds, this.options)
-        .then(creds => {
-          this.onCreds(creds)
+        .then(creds => this.onCreds(creds))
+        .then(() => {
           delete this.tokenRefreshPromise
         })
 

@@ -87,7 +87,13 @@ function complete (challenge, result, options) {
       code: result.code
     })
   })
-    .then(res => res.json())
+    .then(async res => {
+      if (!res.ok) {
+        throw new Error(`OAuth token endpoint responded with ${res.status}: ${await res.text()}`)
+      }
+
+      return res.json()
+    })
 }
 
 module.exports = {
