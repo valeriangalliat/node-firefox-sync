@@ -4,8 +4,16 @@
 
 ## Overview
 
-This kinda started as a [proof of concept](https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html),
-but now it's pretty much a fully functional Firefox Sync client.
+> I actually wanted to inspect my raw Firefox Sync data for some reason
+> that day. I was lazy to put together and run the example code from the
+> [blog](https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html)
+> [posts](https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html)
+> [I wrote](https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html)
+> [earlier](https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html)
+> [this year](https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html),
+> so I ended up spending a few days to release a Node.js client and
+> [CLI](https://github.com/valeriangalliat/firefox-sync-cli) instead. Go
+> figure out.
 
 You can authenticate to Firefox Sync through password authentication or
 through OAuth. With OAuth, the user password is never exposed to the
